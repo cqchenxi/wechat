@@ -5,21 +5,15 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using System.Xml;
-using System.Xml.Serialization;
 using WeChat.Models;
 
 namespace WeChat.Controllers
 {
     public class WeChatController : Controller
     {
-
-        private string token = System.Configuration.ConfigurationManager.AppSettings["Token"];
-
         #region 处理请求数据
 
         /// <summary>
@@ -34,13 +28,14 @@ namespace WeChat.Controllers
         [ActionName("Index")]
         public ActionResult Get(string signature, string timestamp, string nonce, string echostr)
         {
-            if (!string.IsNullOrEmpty(echostr) && CheckSignature(signature, timestamp, nonce, token))
+
+            if (!string.IsNullOrEmpty(echostr) && Signature.CheckSignature(signature, timestamp, nonce))
             {
                 return Content(echostr);
             }
             else
             {
-                Log.Write("Error", GetType().Name, "Signature verification failed: " + Request.QueryString);
+                Log.Error(GetType().Name, "Signature verification failed: " + Request.QueryString);
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
         }
@@ -59,9 +54,9 @@ namespace WeChat.Controllers
         {
 
             //调试时不要验证签名
-            if (!CheckSignature(signature, timestamp, nonce, token))
+            if (!Signature.CheckSignature(signature, timestamp, nonce))
             {
-                Log.Write("Error", GetType().Name, "Signature verification failed: " + Request.QueryString);
+                Log.Error(GetType().Name, "Signature verification failed: " + Request.QueryString);
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
@@ -71,7 +66,7 @@ namespace WeChat.Controllers
 
             if (String.IsNullOrEmpty(requestXml))
             {
-                Log.Write("Error", GetType().Name, "Request data is empty: " + Request.QueryString);
+                Log.Error(GetType().Name, "Request data is empty");
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
@@ -147,12 +142,12 @@ namespace WeChat.Controllers
                         case "masssendjobfinish": //群发消息
                             break;
                         default:
-                            Log.Write("Error", GetType().Name, "Unknown Event: " + requestModel.Event);
+                            Log.Error(GetType().Name, "Unknown Event: " + requestModel.Event);
                             return Content("Unknown Event!");
                     }
                     break;
                 default:
-                    Log.Write("Error", GetType().Name, "Unknown MsgType: " + requestModel.Event);
+                    Log.Error(GetType().Name, "Unknown MsgType: " + requestModel.Event);
                     return Content("Unknown MsgType!");
             }
 
@@ -233,7 +228,7 @@ namespace WeChat.Controllers
                         }
                         break;
                     default:
-                        return "";
+                        return null;
                 }
 
                 if (responseRule != null)
@@ -295,48 +290,21 @@ namespace WeChat.Controllers
 
                             return method.Invoke(obj, new object[] { requestModel }).ToString();
                         default:
-                            return "";
+                            return null;
                     }
                 }
                 else
                 {
-                    return "";
+                    return null;
                 }
             }
             catch (Exception ex)
             {
-                Log.Write("Error", GetType().Name, ex.Message + ":" + ex.StackTrace);
-                return "";
+                Log.Error(GetType().Name, ex.Message + ":" + ex.InnerException);
+                return null;
 
             }
 
-        }
-        #endregion
-
-        #region 验证签名
-        /// <summary>
-        /// 验证签名
-        /// </summary>
-        /// <param name="signature"></param>
-        /// <param name="timestamp"></param>
-        /// <param name="nonce"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        private bool CheckSignature(string signature, string timestamp, string nonce, string token)
-        {
-            string[] arr = new[] { token, timestamp, nonce }.OrderBy(z => z).ToArray();
-            string arrString = string.Join("", arr);
-            SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider();
-            byte[] sha1Arr = sha1.ComputeHash(Encoding.UTF8.GetBytes(arrString));
-            string tempString = BitConverter.ToString(sha1Arr).Replace("-", "").ToLowerInvariant();
-            if (signature == tempString)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
         }
         #endregion
     }

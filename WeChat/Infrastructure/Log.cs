@@ -1,15 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Web;
 
-namespace WeChat.Models
+namespace WeChat
 {
     public class Log
     {
-        //在网站根目录下创建日志目录
+        //日志路径
         public static string path = HttpContext.Current.Request.PhysicalApplicationPath + "Logs";
+
+        public static void Debug(string className, string content)
+        {
+            WriteLog("DEBUG", className, content);
+        }
+
+        public static void Info(string className, string content)
+        {
+            WriteLog("INFO", className, content);
+        }
+
+        public static void Error(string className, string content)
+        {
+            WriteLog("ERROR", className, content);
+        }
 
         /// <summary>
         /// 记录日志
@@ -17,7 +30,7 @@ namespace WeChat.Models
         /// <param name="type">日志类型</param>
         /// <param name="className">类名</param>
         /// <param name="content">内容</param>
-        public static void Write(string type, string className, string content)
+        protected static void WriteLog(string type, string className, string content)
         {
             //如果日志目录不存在就创建
             if (!Directory.Exists(path))
@@ -32,7 +45,7 @@ namespace WeChat.Models
             StreamWriter writer = File.AppendText(filename);
 
             //向日志文件写入内容
-            string write_content = time + " " + type + " " + className + ": " + content;
+            string write_content = time + " " + type + " " + className + " " + content;
             writer.WriteLine(write_content);
 
             //关闭日志文件

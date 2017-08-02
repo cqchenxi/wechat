@@ -18,7 +18,11 @@ namespace WeChat.Functions
 
             StreamReader reader = new StreamReader(response.GetResponseStream(),Encoding.UTF8);
 
-            JObject json = (JObject)JsonConvert.DeserializeObject(reader.ReadToEnd());
+            string jsonString = reader.ReadToEnd();
+
+            JObject jsonObj = (JObject)JsonConvert.DeserializeObject(jsonString);
+
+            List<WeatherData> results = JsonConvert.DeserializeObject<List<WeatherData>>(jsonObj["results"][0]["weather_data"].ToString());
 
             ArticlesModel articlesModel = new ArticlesModel()
             {
@@ -29,33 +33,46 @@ namespace WeChat.Functions
                     new ArticleModel
                     {
                         Title = "天气预报",
-                        Description = json["results"][0]["weather_data"][0]["date"].ToString() + "\n" + 
-                                      json["results"][0]["weather_data"][0]["weather"].ToString() + " " + json["results"][0]["weather_data"][0]["wind"].ToString() + " " + json["results"][0]["weather_data"][0]["temperature"].ToString(),
-                        
+                        Description = results[0].Date + "\n" + 
+                                      results[0].Weather + " " + results[0].Wind + " " + results[0].Temperature,                        
                     },
 
                     new ArticleModel
                     {
-                        Title = json["results"][0]["weather_data"][1]["date"].ToString() + " " + json["results"][0]["weather_data"][1]["weather"].ToString() + " " + json["results"][0]["weather_data"][1]["temperature"].ToString(),
-                        PicUrl = json["results"][0]["weather_data"][1]["dayPictureUrl"].ToString()
+                        Title = results[1].Date + " " + results[1].Weather + " " + results[1].Temperature,
+                        PicUrl = results[1].DayPictureUrl
                     },
 
                     new ArticleModel
                     {
-                        Title = json["results"][0]["weather_data"][2]["date"].ToString() + " " + json["results"][0]["weather_data"][2]["weather"].ToString() + " " + json["results"][0]["weather_data"][2]["temperature"].ToString(),
-                        PicUrl = json["results"][0]["weather_data"][2]["dayPictureUrl"].ToString()
+                        Title = results[2].Date + " " + results[2].Weather + " " + results[2].Temperature,
+                        PicUrl = results[2].DayPictureUrl
 
                     },
 
                     new ArticleModel
                     {
-                        Title = json["results"][0]["weather_data"][3]["date"].ToString() + " " + json["results"][0]["weather_data"][3]["weather"].ToString() + " " + json["results"][0]["weather_data"][3]["temperature"].ToString(),
-                        PicUrl = json["results"][0]["weather_data"][3]["dayPictureUrl"].ToString()
+                        Title = results[3].Date + " " + results[3].Weather + " " + results[3].Temperature,
+                        PicUrl = results[3].DayPictureUrl
                     }
                 }
             };
 
             return articlesModel.ToXML();
         }
+    }
+    public class WeatherData
+    {
+        public string Date { get; set; }
+
+        public string DayPictureUrl { get; set; }
+
+        public string NightPictureUrl { get; set; }
+
+        public string Weather { get; set; }
+
+        public string Wind { get; set; }
+
+        public string Temperature { get; set; }
     }
 }

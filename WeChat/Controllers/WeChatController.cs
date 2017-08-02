@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using System.Xml;
+using System.Xml.Serialization;
 using WeChat.Models;
 
 namespace WeChat.Controllers
@@ -39,6 +40,7 @@ namespace WeChat.Controllers
             }
             else
             {
+                Log.Write("Error", GetType().Name, "Signature verification failed: " + Request.QueryString);
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
         }
@@ -59,6 +61,7 @@ namespace WeChat.Controllers
             //调试时不要验证签名
             if (!CheckSignature(signature, timestamp, nonce, token))
             {
+                Log.Write("Error", GetType().Name, "Signature verification failed: " + Request.QueryString);
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
@@ -68,6 +71,7 @@ namespace WeChat.Controllers
 
             if (String.IsNullOrEmpty(requestXml))
             {
+                Log.Write("Error", GetType().Name, "Request data is empty: " + Request.QueryString);
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
@@ -143,11 +147,13 @@ namespace WeChat.Controllers
                         case "masssendjobfinish": //群发消息
                             break;
                         default:
-                            return Content("Invalid Event!");
+                            Log.Write("Error", GetType().Name, "Unknown Event: " + requestModel.Event);
+                            return Content("Unknown Event!");
                     }
                     break;
                 default:
-                    return Content("Invalid MsgType!");
+                    Log.Write("Error", GetType().Name, "Unknown MsgType: " + requestModel.Event);
+                    return Content("Unknown MsgType!");
             }
 
             return Content(ResponseMsg(requestModel));
@@ -299,22 +305,8 @@ namespace WeChat.Controllers
             }
             catch (Exception ex)
             {
-                //调试时使用，正式环境写入日志
-                ArticlesModel responseModel = new ArticlesModel()
-                {
-                    ToUserName = requestModel.FromUserName,
-                    FromUserName = requestModel.ToUserName,
-                    Articles = new List<ArticleModel>
-                    {
-                        new ArticleModel
-                        {
-                            Title = "错误报告",
-                            Description = ex.Message + "\n" + ex.StackTrace.ToString()
-                        }
-                    }
-                };
-
-                return responseModel.ToXML();
+                Log.Write("Error", GetType().Name, ex.Message + ":" + ex.StackTrace);
+                return "";
 
             }
 

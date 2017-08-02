@@ -165,6 +165,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\WeChatController.cs" />
+    <Compile Include="Models\Log.cs" />
     <Compile Include="Functions\Map.cs" />
     <Compile Include="Functions\Weather.cs" />
     <Compile Include="Global.asax.cs">

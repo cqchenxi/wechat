@@ -1,4 +1,5 @@
 WeChat/bin/
 WeChat/Logs/
-WeChat/obj/Debug/
+WeChat/obj/
+WeChat/Properties/
 .vs/

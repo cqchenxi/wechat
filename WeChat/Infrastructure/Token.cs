@@ -7,7 +7,7 @@ using System.Text;
 
 namespace WeChat
 {
-    public class AccessToken
+    public class Token
     {
         private static string Access_Token;
 
@@ -64,7 +64,7 @@ namespace WeChat
 
             StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
 
-            string responseString = reader.ReadToEnd();
+            string responseString = HttpService.Get($"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={AppID}&secret={AppSecret}");
 
             JObject result = JsonConvert.DeserializeObject(responseString) as JObject;
 
@@ -77,14 +77,14 @@ namespace WeChat
                     Expires_Period = int.Parse(result["expires_in"].ToString());
                 }
 
-                Log.Info("AccessToken", "Get Access_Token success");
+                Log.Info("Token", "Get Access_Token succeeded");
 
                 return result["access_token"].ToString();
             }
             else
             {
                 GettokenTime = DateTime.MinValue;
-                Log.Error("AccessToken", result["errmsg"].ToString());
+                Log.Error("Token", result["errmsg"].ToString());
             }
             return null;
         }

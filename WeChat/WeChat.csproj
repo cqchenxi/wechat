@@ -165,8 +165,9 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\WeChatController.cs" />
-    <Compile Include="Infrastructure\AccessToken.cs" />
+    <Compile Include="Infrastructure\Token.cs" />
     <Compile Include="Infrastructure\Config.cs" />
+    <Compile Include="Infrastructure\HttpService.cs" />
     <Compile Include="Infrastructure\Log.cs" />
     <Compile Include="Functions\Map.cs" />
     <Compile Include="Functions\Weather.cs" />
@@ -192,9 +193,16 @@
     <Compile Include="Models\AutoResponseRule.cs">
       <DependentUpon>AutoResponseModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Models\MenuModel.cs" />
     <Compile Include="Models\RequestModel.cs" />
     <Compile Include="Models\ResponseModel.cs" />
+    <Compile Include="Models\TagModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\WeChat.mdf" />
@@ -239,6 +247,11 @@
     <Content Include="Content\bootstrap-theme.css.map" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
     <Content Include="Scripts\jquery-1.9.1.js" />
     <Content Include="Scripts\jquery-1.9.1.min.js" />
@@ -263,9 +276,6 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

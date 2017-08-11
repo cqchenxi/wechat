@@ -41,8 +41,10 @@ namespace WeChat
             string time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");//获取当前系统时间
             string filename = path + "/" + DateTime.Now.ToString("yyyy-MM-dd") + ".log";//用日期对日志文件命名
 
+            FileStream fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write);
+
             //创建或打开日志文件，向日志文件末尾追加记录
-            StreamWriter writer = File.AppendText(filename);
+            StreamWriter writer = new StreamWriter(fileStream);
 
             //向日志文件写入内容
             string write_content = time + " " + type + " " + className + " " + content;

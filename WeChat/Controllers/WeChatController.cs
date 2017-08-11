@@ -1,21 +1,20 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
-using System.Xml;
+using System.Xml.Serialization;
 using WeChat.Models;
 
 namespace WeChat.Controllers
 {
     public class WeChatController : Controller
     {
-        #region 处理请求数据
 
+        #region 配置服务器
         /// <summary>
         /// 配置服务器
         /// </summary>
@@ -39,7 +38,9 @@ namespace WeChat.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
         }
+        #endregion
 
+        #region 处理请求数据
         /// <summary>
         /// 处理请求数据
         /// </summary>
@@ -53,105 +54,32 @@ namespace WeChat.Controllers
         public ActionResult Post(string signature, string timestamp, string nonce, string echostr)
         {
 
-            //调试时不要验证签名
+            //使用微信公众平台接口调试工具调试时不要验证签名
             if (!Signature.CheckSignature(signature, timestamp, nonce))
             {
                 Log.Error(GetType().Name, "Signature verification failed: " + Request.QueryString);
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            //读取requestXML
-            StreamReader reader = new StreamReader(Request.InputStream);
-            string requestXml = reader.ReadToEnd();
-
-            if (String.IsNullOrEmpty(requestXml))
+            if (Request.InputStream.Length == 0)
             {
                 Log.Error(GetType().Name, "Request data is empty");
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            XmlDocument xmlDoc = new XmlDocument();
-
-            xmlDoc.LoadXml(requestXml);
-
-            XmlElement rootElement = xmlDoc.DocumentElement;
-
-            RequestModel requestModel = new RequestModel()
+            try
             {
-                ToUserName = rootElement.SelectSingleNode("ToUserName").InnerText,
-                FromUserName = rootElement.SelectSingleNode("FromUserName").InnerText,
-                CreateTime = rootElement.SelectSingleNode("CreateTime").InnerText,
-                MsgType = rootElement.SelectSingleNode("MsgType").InnerText.ToLower()
-            };
+                XmlSerializer xmlSearializer = new XmlSerializer(typeof(RequestModel));
+                RequestModel requestModel = (RequestModel)xmlSearializer.Deserialize(Request.InputStream);
 
-            //根据不同的消息类型获取不同的请求数据
-            switch (requestModel.MsgType)
-            {
-                case "text": //文本
-                    requestModel.Content = rootElement.SelectSingleNode("Content").InnerText;
-                    break;
-                case "image": //图片
-                    requestModel.PicUrl = rootElement.SelectSingleNode("PicUrl").InnerText;
-                    requestModel.MediaId = rootElement.SelectSingleNode("MediaId").InnerText;
-                    break;
-                case "voice": //语音
-                    requestModel.MediaId = rootElement.SelectSingleNode("MediaId").InnerText;
-                    requestModel.Format = rootElement.SelectSingleNode("Format").InnerText;
-                    requestModel.Recognition = rootElement.SelectSingleNode("Recognition").InnerText;
-                    break;
-                case "video": //视频
-                    requestModel.MediaId = rootElement.SelectSingleNode("MediaId").InnerText;
-                    requestModel.ThumbMediaId = rootElement.SelectSingleNode("ThumbMediaId").InnerText;
-                    break;
-                case "shortvideo": //小视频
-                    requestModel.MediaId = rootElement.SelectSingleNode("MediaId").InnerText;
-                    requestModel.ThumbMediaId = rootElement.SelectSingleNode("ThumbMediaId").InnerText;
-                    break;
-                case "location": //位置
-                    requestModel.Location_X = rootElement.SelectSingleNode("Location_X").InnerText;
-                    requestModel.Location_Y = rootElement.SelectSingleNode("Location_Y").InnerText;
-                    requestModel.Scale = rootElement.SelectSingleNode("Scale").InnerText;
-                    requestModel.Label = rootElement.SelectSingleNode("Label").InnerText;
-                    break;
-                case "link": //链接
-                    requestModel.Title = rootElement.SelectSingleNode("Title").InnerText;
-                    requestModel.Description = rootElement.SelectSingleNode("Description").InnerText;
-                    requestModel.Url = rootElement.SelectSingleNode("Url").InnerText;
-                    break;
-                case "event": //事件
-                    requestModel.Event = rootElement.SelectSingleNode("Event").InnerText.ToLower();
-                    switch (requestModel.Event)
-                    {
-                        case "subscribe": //关注
-                            requestModel.EventKey = rootElement.SelectSingleNode("EventKey").InnerText;
-                            requestModel.Ticket = rootElement.SelectSingleNode("Ticket").InnerText;
-                            break;
-                        case "unsubscribe": //取消关注
-                            break;
-                        case "location": //上报位置
-                            requestModel.Latitude = rootElement.SelectSingleNode("Latitude").InnerText;
-                            requestModel.Longitude = rootElement.SelectSingleNode("Longitude").InnerText;
-                            requestModel.Precision = rootElement.SelectSingleNode("Precision").InnerText;
-                            break;
-                        case "click": //点击菜单拉取消息
-                            requestModel.EventKey = rootElement.SelectSingleNode("EventKey").InnerText;
-                            break;
-                        case "view": //点击菜单跳转链接
-                            requestModel.EventKey = rootElement.SelectSingleNode("EventKey").InnerText;
-                            break;
-                        case "masssendjobfinish": //群发消息
-                            break;
-                        default:
-                            Log.Error(GetType().Name, "Unknown Event: " + requestModel.Event);
-                            return Content("Unknown Event!");
-                    }
-                    break;
-                default:
-                    Log.Error(GetType().Name, "Unknown MsgType: " + requestModel.Event);
-                    return Content("Unknown MsgType!");
+                return Content(ResponseMsg(requestModel));
             }
+            catch (Exception ex)
+            {
+                Log.Error(GetType().Name, ex.Message + ":" + ex.InnerException);
+                return null;
 
-            return Content(ResponseMsg(requestModel));
+            }
         }
         #endregion
 
@@ -217,6 +145,12 @@ namespace WeChat.Controllers
                                 break;
                             case "click": //点击菜单拉取消息
                             case "view": //点击菜单跳转链接
+                            case "scancode_push": //扫码推事件
+                            case "scancode_waitmsg": //扫码推事件且弹出“消息接收中”提示框
+                            case "pic_sysphoto": //弹出系统拍照发图
+                            case "pic_photo_or_album": //弹出拍照或者相册发图
+                            case "pic_weixin": //弹出微信相册发图器
+                            case "location_select": //弹出地理位置选择器
                                 responseRule = (from rule in db.AutoResponseRules
                                                where rule.MsgType == requestModel.MsgType
                                                where rule.RequestPattern == requestModel.Event + "_" + requestModel.EventKey
@@ -224,11 +158,13 @@ namespace WeChat.Controllers
                                                select rule).FirstOrDefault();
                                 break;
                             default:
-                                break;
+                                Log.Error(GetType().Name, "Unknown Event: " + requestModel.Event);
+                                return "Unknown Event!";
                         }
                         break;
                     default:
-                        return null;
+                        Log.Error(GetType().Name, "Unknown MsgType: " + requestModel.MsgType);
+                        return "Unknown MsgType";
                 }
 
                 if (responseRule != null)
@@ -300,7 +236,7 @@ namespace WeChat.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(GetType().Name, ex.Message + ":" + ex.InnerException);
+                Log.Error(GetType().Name, ex.Message + ex.InnerException);
                 return null;
 
             }

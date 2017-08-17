@@ -178,33 +178,39 @@ namespace WeChat.Controllers
                                 FromUserName = requestModel.ToUserName,
                                 Content = responseRule.ResponseContent
                             };
-                            return textModel.ToXML();
+                            return XmlConvert.SerializeObject(textModel);
                         case "image": //回复图片消息
                             ImageModel imageModel = new ImageModel()
                             {
                                 ToUserName = requestModel.FromUserName,
                                 FromUserName = requestModel.ToUserName,
-                                MediaId = responseRule.ResponseContent
+                                Image = new Image
+                                {
+                                    MediaId = responseRule.ResponseContent
+                                }                 
                             };
-                            return imageModel.ToXML();
+                            return XmlConvert.SerializeObject(imageModel);
                         case "voice": //回复语音消息
                             VoiceModel voiceModel = new VoiceModel()
                             {
                                 ToUserName = requestModel.FromUserName,
                                 FromUserName = requestModel.ToUserName,
-                                MediaId = responseRule.ResponseContent
+                                Voice = new Voice
+                                {
+                                    MediaId = responseRule.ResponseContent
+                                }     
                             };
-                            return voiceModel.ToXML();
+                            return XmlConvert.SerializeObject(voiceModel);
                         case "video": //回复视频消息
                             VideoModel videoModel = JsonConvert.DeserializeObject<VideoModel>(responseRule.ResponseContent);
                             videoModel.ToUserName = requestModel.FromUserName;
                             videoModel.FromUserName = requestModel.ToUserName;
-                            return videoModel.ToXML();
+                            return XmlConvert.SerializeObject(videoModel);
                         case "music": //回复音乐消息
                             MusicModel musicModel = JsonConvert.DeserializeObject<MusicModel>(responseRule.ResponseContent);
                             musicModel.ToUserName = requestModel.FromUserName;
                             musicModel.FromUserName = requestModel.ToUserName;
-                            return musicModel.ToXML();
+                            return XmlConvert.SerializeObject(musicModel);
                         case "news": //回复图文消息
                             ArticlesModel articlesModel = new ArticlesModel()
                             {
@@ -212,7 +218,7 @@ namespace WeChat.Controllers
                                 FromUserName = requestModel.ToUserName,
                                 Articles = JsonConvert.DeserializeObject<List<ArticleModel>>(responseRule.ResponseContent)
                             };
-                            return articlesModel.ToXML();
+                            return XmlConvert.SerializeObject(articlesModel);
                         case "function":
                             //通过反射调用实例化对应的处理类
 

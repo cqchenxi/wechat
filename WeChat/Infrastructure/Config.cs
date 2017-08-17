@@ -2,7 +2,7 @@
 
 namespace WeChat
 {
-    public class Config
+    public static class Config
     {
         public static readonly string Token = ConfigurationManager.AppSettings["Token"];
         public static readonly string AppID = ConfigurationManager.AppSettings["AppID"];

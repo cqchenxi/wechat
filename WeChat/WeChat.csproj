@@ -25,6 +25,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -165,12 +166,14 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\WeChatController.cs" />
+    <Compile Include="Infrastructure\CData.cs" />
+    <Compile Include="Infrastructure\LowercasedNameContractResolver.cs" />
+    <Compile Include="Infrastructure\XmlConvert.cs" />
     <Compile Include="Infrastructure\Token.cs" />
     <Compile Include="Infrastructure\Config.cs" />
     <Compile Include="Infrastructure\HttpService.cs" />
     <Compile Include="Infrastructure\Log.cs" />
-    <Compile Include="Functions\Map.cs" />
-    <Compile Include="Functions\Weather.cs" />
+    <Compile Include="Functions\Demo.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -193,16 +196,15 @@
     <Compile Include="Models\AutoResponseRule.cs">
       <DependentUpon>AutoResponseModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\MenuModel.cs" />
     <Compile Include="Models\RequestModel.cs" />
     <Compile Include="Models\ResponseModel.cs" />
-    <Compile Include="Models\TagModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\WeChat.mdf" />
